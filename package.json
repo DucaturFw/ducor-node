@@ -1,0 +1,36 @@
+{
+  "name": "ducor-node",
+  "version": "0.0.1",
+  "description": "Ducor Node (Ducatur Decentralized Oracles Network)",
+  "main": "lib/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DucaturFw/ducor-node.git"
+  },
+  "keywords": [
+    "blockchain",
+    "node",
+    "oracles"
+  ],
+  "author": "Aler Denisov <aler.zampillo@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DucaturFw/ducor-node/issues"
+  },
+  "homepage": "https://github.com/DucaturFw/ducor-node#readme",
+  "dependencies": {
+    "@types/node": "^10.7.1",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.1",
+    "jest": "^23.5.0",
+    "jest-extended": "^0.8.1",
+    "ts-jest": "^23.1.4"
+  }
+}
