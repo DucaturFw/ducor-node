@@ -56,4 +56,25 @@ describe("musig cryptography tests", () => {
       keys.map(key => musig.personalRandomPoint(hash, key).encode("hex", true))
     );
   });
+
+  it("decodeble random points", () => {
+    keys.map(key => musig.personalRandomPoint(hash, key)).forEach(point => {
+      expect(point).toHaveProperty("x");
+      expect(point).toHaveProperty("y");
+    });
+  });
+
+  it("group random point", () => {
+    expect(
+      Buffer.from(
+        musig
+          .groupRandomPoint(
+            ...keys.map(key => musig.personalRandomPoint(hash, key))
+          )
+          .encode()
+      ).toString("hex")
+    ).toEqual(
+      "04ef22652138cc7a3a70f28d00b33cf71986eebb14b4dbf6928f04327a3af8400141d11e2b39d52dfc718016edb9399f8200a8b8c5a726006c80d269aa624a08cc"
+    );
+  });
 });
