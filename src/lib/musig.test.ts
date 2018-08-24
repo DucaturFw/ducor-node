@@ -46,4 +46,14 @@ describe("musig cryptography tests", () => {
         expect(musig.deterministinK(hash, key).toString("hex"))
       );
   });
+
+  it("personal random point", () => {
+    expect([
+      "028e1124bf6296d3002188c382c530a011e5044ddcef5f764647ca4a4b911dbf00",
+      "03120c79ceed69a8af64659227dc02acc78219ded39c316a70436a077bb7633881",
+      "024d95b1562256fccb85afbdbfee227e7046ab0071f4968726b72f2930d8d6c6ca"
+    ]).toEqual(
+      keys.map(key => musig.personalRandomPoint(hash, key).encode("hex", true))
+    );
+  });
 });
