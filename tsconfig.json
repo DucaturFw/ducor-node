@@ -4,8 +4,9 @@
     "module": "commonjs",
     "lib": ["es2015", "es2016.array.include", "es2017.object"],
     "resolveJsonModule": true,
-    "typeRoots": ["./@types", "./node_modules/@types/"],
-    "strict": true
+    "typeRoots": ["./@types", "./node_modules/@types/"]
+    //"types": ["./node_modules/types-bn"],
+    // "strict": true
     // "allowJs": true,                       /* Allow javascript files to be compiled. */
     // "checkJs": true,                       /* Report errors in .js files. */
     // "jsx": "preserve",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
