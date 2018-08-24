@@ -1,11 +1,12 @@
 import BN = require("bn.js");
 import utils from "./utils";
+import { totalmem } from "os";
 
 const DRBG = require("bcrypto/lib/drbg");
 const sha256 = require("bcrypto/lib/sha256");
 const elliptic = require("elliptic");
-const Signature = require("elliptic/lib/elliptic/ec/signature") as any;
 const curve = elliptic.ec("secp256k1").curve;
+const Signature = require("elliptic/lib/elliptic/ec/signature") as any;
 
 export type CombinedPublicKeys = Buffer;
 export type GroupFactor = Buffer;
@@ -29,25 +30,22 @@ export default class musig {
   public static groupPublicKey(
     publicKeys: Buffer[],
     factor?: GroupFactor
-  ): Buffer {
+  ): any {
     if (!factor) factor = musig.groupFactor(publicKeys);
     const publicPoints = publicKeys.map(pub => curve.decodePoint(pub));
     const memberHashes = publicKeys
       .map(pub => utils.hashOfBuffers(factor, pub))
       .map(hash => new BN(hash));
 
-    return Buffer.from(
-      Array(publicKeys.length)
-        .fill(0)
-        .reduce((point, index) => {
-          if (!point) {
-            return publicPoints[index].mul(memberHashes[index]);
-          }
+    return Array(publicKeys.length)
+      .fill(0)
+      .reduce((point, index) => {
+        if (!point) {
+          return publicPoints[index].mul(memberHashes[index]);
+        }
 
-          return point.add(publicPoints[index].mul(memberHashes[index]));
-        }, null)
-        .encode()
-    );
+        return point.add(publicPoints[index].mul(memberHashes[index]));
+      }, null);
   }
 
   public static deterministinK(hash: Buffer, priv: Buffer, salt?: Buffer): any {
@@ -62,12 +60,14 @@ export default class musig {
 
     musig.alg.copy(pers, 32);
 
-    return new DRBG(sha256, priv, hash, pers).generate(curve.n.byteLength());
+    return new BN(
+      new DRBG(sha256, priv, hash, pers).generate(curve.n.byteLength())
+    );
   }
 
   public static personalRandomPoint(msg: Buffer, key: Buffer, salt?: Buffer) {
     const r = musig.deterministinK(msg, key, salt);
-    return curve.g.mul(new BN(r)); //.encode("array", true);
+    return curve.g.mul(r); //.encode("array", true);
   }
 
   public static groupRandomPoint(
@@ -89,5 +89,43 @@ export default class musig {
 
       return (<any>point).add(currentPoint);
     }, null);
+  }
+
+  static sign(
+    hash: any,
+    pub: Buffer,
+    key: Buffer,
+    L: Buffer,
+    R: any,
+    P: any
+  ): any {
+    const k = musig.deterministinK(hash, key);
+    const h1 = new BN(
+      utils.hashOfBuffers(
+        Buffer.from(P.encode()),
+        Buffer.from(R.encode()),
+        hash
+      )
+    );
+    const h2 = new BN(utils.hashOfBuffers(L, pub));
+    const pk = new BN(key);
+
+    return k.add(h1.mul(h2).mul(pk));
+  }
+
+  static combine(s: BN[]) {
+    return s.reduce((total, current) => total.add(current), new BN(0));
+  }
+
+  static verify(hash: Buffer, s: BN, R: any, P: any) {
+    const H = new BN(
+      utils.hashOfBuffers(
+        Buffer.from(P.encode()),
+        Buffer.from(R.encode()),
+        hash
+      )
+    );
+
+    curve.g.mul(s).eq(R.add(P.mul(H)));
   }
 }
