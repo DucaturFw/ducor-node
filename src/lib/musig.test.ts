@@ -24,4 +24,14 @@ describe("musig cryptography tests", () => {
       "c0969a83cb86ac063853b7dcf2f45437dc7348a26d3f59c3c9d4569285a8c6da"
     );
   });
+
+  it("group public key", () => {
+    const P = musig.groupPublicKey(pubs);
+    expect(P).toBeTruthy();
+    expect(P.toString("hex")).toEqual(
+      // looks weird or not?
+      // maybe it should be modulated over length?
+      "04b0074bb3edc0166eb237dfb43df27b740890b900543be2f1317f999a9f6bd705593bbcab6e51ed2c3931be2ea5259c3c2ae8a3ec70a1aa3cc5a41ea7a1f19ecd"
+    );
+  });
 });
