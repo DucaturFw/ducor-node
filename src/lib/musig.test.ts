@@ -85,9 +85,9 @@ describe("musig cryptography tests", () => {
     const P = musig.groupPublicKey(pubs, L);
 
     expect([
-      "0c6f401a99b1d1244344a831c30f906ed6e2afa036102d484966681d5c0b0d295e2e7461e4cfbc04130bdb506a588c97e5a2e813d80ef628a7670e498544afe189a16e6c9dadb686fc46df3b1b9391e2656a88b90c68456fe30172c36c69d246",
-      "2024d16ee700ffd88df518394513fda27083db4f7d6ca8c3d0cc2a99d39cd18dbb8232a725ed2236ddbce0fab4b607959ebfb8f777fb8e32be6908e189fd1dde2d29083e6381cf5351fea4db19309bf2c7a218199ec8c1372d76f3889bba0e48",
-      "1ea2ab7c5efaf20d30e422f73a9600988d07a5844fe7a4cedae4243bc876b06f2763b499c919e67d6cf2d5a38d8ae9bd4fa7eaeaa5e653d19cbd0aeb4fd8f4834891dc641dbeb4be3169352d35b168c113a55266a900e155d9c1e0f57bd91afe"
+      "f37e075bac6320d4e8443d8b47785c272ec9c4dd27988de284c2e89e6dea1aec",
+      "7a61cc0104c9bf702730b2c2e7fb65fa4acdffdfd6bf8d20019a7bd5ec229ec7",
+      "559175a04cdc4208f8205be13a89d0e36dfabe10c4359cff1f1cbc60546d87dd"
     ]).toEqual(
       keys.map((key, index) =>
         musig
@@ -113,7 +113,7 @@ describe("musig cryptography tests", () => {
       .toString("hex");
 
     expect(s).toEqual(
-      "4b36bd05dfadc30a021de36242b98ea9d46e307403647adaf516b6f2f81e8f2641145ba2d3d6c4b85dbb91eeac997dead40a8bf5f5f0d82d028d22165f1ac242ff5c530f1eee3a987faeb9436a75969640b1f3395431e7fcea3a474183fcfb8c"
+      "c37148fcfe09224e07954c2f69fd93062ce3a5e7134517c5e5a7c247de44004f"
     );
   });
 
@@ -128,6 +128,6 @@ describe("musig cryptography tests", () => {
 
     const s = musig.combine(Si);
 
-    console.log(musig.verify(hash, s, R, P));
+    expect(musig.verify(hash, s, R, P)).toBeTrue();
   });
 });

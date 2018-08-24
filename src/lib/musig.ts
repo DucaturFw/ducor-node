@@ -110,11 +110,13 @@ export default class musig {
     const h2 = new BN(utils.hashOfBuffers(L, pub));
     const pk = new BN(key);
 
-    return k.add(h1.mul(h2).mul(pk));
+    return k.iadd(h1.mul(h2).mul(pk)).umod(curve.n);
   }
 
   static combine(s: BN[]) {
-    return s.reduce((total, current) => total.add(current), new BN(0));
+    return s.reduce((total, current) => {
+      return total.iadd(current).umod(curve.n);
+    }, new BN(0));
   }
 
   static verify(hash: Buffer, s: BN, R: any, P: any) {
@@ -126,6 +128,6 @@ export default class musig {
       )
     );
 
-    curve.g.mul(s).eq(R.add(P.mul(H)));
+    return curve.g.mul(s).eq(R.add(P.mul(H)));
   }
 }
