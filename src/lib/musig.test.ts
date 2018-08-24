@@ -34,4 +34,16 @@ describe("musig cryptography tests", () => {
       "04b0074bb3edc0166eb237dfb43df27b740890b900543be2f1317f999a9f6bd705593bbcab6e51ed2c3931be2ea5259c3c2ae8a3ec70a1aa3cc5a41ea7a1f19ecd"
     );
   });
+
+  it("deterministic Ks", () => {
+    [
+      "bebbddac729fde58c15c014094e639559c35cd61a01502b961732fc5ccf032a9",
+      "3198e4bba4b3570bad718201115534896fd0d791e4d3c378763517f233eb0960",
+      "2dc923e38ccc86126d0be7051bf060bb0579d83dd2553f4fa029e825273ee703"
+    ]
+      .map((k, index) => [keys[index], k] as [Buffer, string])
+      .forEach(([key, k]) =>
+        expect(musig.deterministinK(hash, key).toString("hex"))
+      );
+  });
 });
