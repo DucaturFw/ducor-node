@@ -52,7 +52,7 @@ declare module "lotion" {
       blockHandler: BlockHandler<TState, TTransaction, TChainInfo>
     ): LotionApp<TState, TTransaction, TChainInfo>;
 
-    listen(port: number): void;
+    listen(port: number): Promise<any>;
   }
 
   interface ILotionInitialConfiguration<TState> {
@@ -64,7 +64,12 @@ declare module "lotion" {
       configuration?: ILotionInitialConfiguration<TState>
     ): LotionApp<TState, TTransaction, TChainInfo>;
 
-    connect(): any;
+    connect<TState, TTransaction>(
+      ...args: any[]
+    ): Promise<{
+      send: (tx: TTransaction) => Promise<any>;
+      readonly state: Promise<TState>;
+    }>;
   }
 
   const Lotion: ILotionModule;
