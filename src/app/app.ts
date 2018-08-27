@@ -1,5 +1,5 @@
 import * as lotion from "lotion";
-import { schnorr } from "./schnorr";
+import musig from "../lib/musig";
 
 export interface IState {
   count: number;
@@ -13,12 +13,14 @@ export interface IChainInfo {
   foo: number;
 }
 
+console.log("Intitialize lotion app");
 const app = lotion<IState, ITransaction, IChainInfo>({
   initialState: {
     count: 0
   }
 });
 
+console.log("Configure handlers");
 app.use((state, tx) => {
   let msg: Buffer, sig: Buffer, pub: Buffer;
   try {
@@ -29,6 +31,8 @@ app.use((state, tx) => {
   }
   sig = Buffer.from(tx.sig, "hex");
   pub = Buffer.from(tx.pub, "hex");
-  schnorr.verify(msg, sig, pub);
+  // schnorr.verify(msg, sig, pub);
 });
-app.listen(3000);
+
+console.log("Start node");
+app.listen(3000).then(console.log);
