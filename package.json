@@ -4,7 +4,8 @@
   "description": "Ducor Node (Ducatur Decentralized Oracles Network)",
   "main": "lib/app.ts",
   "scripts": {
-    "start": "ts-node src/app.ts",
+    "start": "ts-node src/app/app.ts",
+    "cli": "ts-node src/client/cli.ts",
     "test": "jest"
   },
   "repository": {
@@ -23,7 +24,16 @@
   },
   "homepage": "https://github.com/DucaturFw/ducor-node#readme",
   "dependencies": {
+    "@types/bcrypt": "^2.0.0",
+    "@types/bn.js": "^4.11.1",
+    "@types/brorand": "^1.0.30",
     "@types/node": "^10.7.1",
+    "bcrypto": "^1.1.0",
+    "bitcoin-ts": "^1.2.0",
+    "bn.js": "^4.11.8",
+    "brorand": "^1.1.0",
+    "elliptic": "^6.4.1",
+    "lotion": "^0.1.19",
     "ts-node": "^7.0.1",
     "typescript": "^3.0.1"
   },
@@ -31,6 +41,7 @@
     "@types/jest": "^23.3.1",
     "jest": "^23.5.0",
     "jest-extended": "^0.8.1",
+    "nodemon": "^1.18.3",
     "ts-jest": "^23.1.4"
   }
 }
