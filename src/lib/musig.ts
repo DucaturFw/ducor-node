@@ -1,9 +1,8 @@
 import BN = require("bn.js");
-import { hashOfBuffers } from "./utils";
-
+import { soliditySHA3 } from "ethereumjs-abi";
+import keccak = require("keccak");
 import elliptic = require("elliptic");
 const secp256k1 = elliptic.ec("secp256k1");
-const Signature = require("elliptic/lib/elliptic/ec/signature");
 
 type Point = typeof elliptic.Point;
 type MUSignature = {
@@ -11,89 +10,116 @@ type MUSignature = {
   s: BN;
 };
 
-export function hashInt(...parts: (Buffer | BN | Point)[]): BN {
-  return new BN(hash(...parts));
+export function hashPublicKeys(keys: Point[]): BN {
+  const coords = keys.map(p => [p.x, p.y]);
+  const data = coords.reduce((acc, coord) => acc.concat(coord), []);
+  return new BN(soliditySHA3(Array(keys.length * 2).fill("uint256"), data));
 }
 
-export function hash(...parts: (Buffer | BN | Point)[]): Buffer {
-  return hashOfBuffers(
-    ...parts.map(p => {
-      if (p instanceof Buffer) {
-        return p;
-      }
-
-      if (p instanceof BN) {
-        return p.toBuffer();
-      }
-
-      if (p.x && p.y) {
-        return Buffer.from(p.encode(16));
-      }
-
-      throw new Error("unknown type of part: " + typeof p);
-    })
+export function hashNonceWithKey(nonce: BN, groupKey: Point): BN {
+  return new BN(
+    soliditySHA3(
+      ["uint256", "uint256", "uint256"],
+      [nonce, groupKey.x, groupKey.y]
+    )
   );
 }
 
-export function L(Pn: Point[]): BN {
-  return hashInt(...Pn);
+export function hashGroupKeyWithPointAndMessage(
+  randomPoint: Point,
+  groupKey: Point,
+  message: Buffer
+): BN {
+  return new BN(
+    soliditySHA3(
+      ["uint256", "uint256", "uint256", "uint256", "bytes32"],
+      [groupKey.x, groupKey.y, randomPoint.x, randomPoint.y, message]
+    )
+  );
 }
 
-export function getAggregatePublicKey(L: BN, Xs: Point[]): Point {
-  let X = Xs[0].mul(hashInt(L, Xs[0]));
+export function hash(b: Buffer): Buffer {
+  return Buffer.from(
+    keccak("keccak" + 256)
+      .update(b)
+      .digest("hex"),
+    "hex"
+  );
+}
 
-  for (let i = 1; i < Xs.length; i++) {
-    X = X.add(Xs[i].mul(hashInt(L, Xs[i])));
+export function signerGroupNonce(Pn: Point[]): BN {
+  return hashPublicKeys(Pn);
+}
+
+export function getAggregatePublicKey(nonce: BN, publicKeys: Point[]): Point {
+  let aggregated = publicKeys[0].mul(hashNonceWithKey(nonce, publicKeys[0]));
+
+  for (let i = 1; i < publicKeys.length; i++) {
+    aggregated = aggregated.add(
+      publicKeys[i].mul(hashNonceWithKey(nonce, publicKeys[i]))
+    );
   }
 
-  return X;
+  return aggregated;
 }
 
-export function R(Pn: Point[]): Point {
-  let R = Pn[0];
+export function aggregatedPoint(randomPoints: Point[]): Point {
+  let aggregated = randomPoints[0];
 
-  for (let i = 1; i < Pn.length; i++) {
-    R = R.add(Pn[i]);
+  for (let i = 1; i < randomPoints.length; i++) {
+    aggregated = aggregated.add(randomPoints[i]);
   }
 
-  return R;
+  return aggregated;
 }
 
-export function getSi(
-  ri: BN,
-  X: Point,
-  R: Point,
-  m: Buffer,
-  L: BN,
-  xi: BN,
-  Xi: Point
+export function getSignature(
+  randomNumber: BN,
+  groupPublicKey: Point,
+  randomPoint: Point,
+  message: Buffer,
+  groupNonce: BN,
+  personalPrivateKey: BN,
+  personalPublicKey: Point
 ): MUSignature {
-  var s = hashInt(R, X, m)
-    .mul(hashInt(L, Xi))
-    .mul(xi);
-  var si = ri.add(s).umod(secp256k1.curve.n);
+  var s = hashGroupKeyWithPointAndMessage(randomPoint, groupPublicKey, message)
+    .mul(hashNonceWithKey(groupNonce, personalPublicKey))
+    .mul(personalPrivateKey);
+  var si = randomNumber.add(s).umod(secp256k1.curve.n);
   return {
-    r: R,
+    r: randomPoint,
     s: si
   };
 }
 
-export function combine(sigs: MUSignature[], R: Point): MUSignature {
-  let S = sigs[0].s;
+export function combineSignatures(
+  signaturess: MUSignature[],
+  randomPoint: Point
+): MUSignature {
+  let signature = signaturess[0].s;
 
-  for (let i = 1; i < sigs.length; i++) {
-    S = S.add(sigs[i].s);
+  for (let i = 1; i < signaturess.length; i++) {
+    signature = signature.add(signaturess[i].s);
   }
 
   return {
-    r: R,
-    s: S
+    r: randomPoint,
+    s: signature
   };
 }
 
-export function verify(m: Buffer, s: MUSignature, X: Point, R: Point): boolean {
-  const lPoint = secp256k1.curve.g.mul(s.s);
-  const rPoint = R.add(X.mul(hashInt(R, X, m)));
+export function verifySignature(
+  message: Buffer,
+  signature: MUSignature,
+  groupPublicKey: Point,
+  groupRandomPoint: Point
+): boolean {
+  const lPoint = secp256k1.curve.g.mul(signature.s);
+  const rPoint = groupRandomPoint.add(
+    groupPublicKey.mul(
+      hashGroupKeyWithPointAndMessage(groupRandomPoint, groupPublicKey, message)
+    )
+  );
 
   return lPoint.eq(rPoint);
 }

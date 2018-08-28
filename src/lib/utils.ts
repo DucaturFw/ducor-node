@@ -1,6 +1,5 @@
 import BN = require("bn.js");
-
-const sha256 = require("bcrypto/lib/sha256");
+import hashFunc = require("keccak");
 
 export function hashOfBuffers(...buffers: Buffer[]): Buffer {
   const length = buffers.reduce(
@@ -15,7 +14,12 @@ export function hashOfBuffers(...buffers: Buffer[]): Buffer {
     offset += buffer.length;
   });
 
-  return Buffer.from(sha256.digest(final), "hex");
+  return Buffer.from(
+    hashFunc("keccak" + 256)
+      .update(final)
+      .digest("hex"),
+    "hex"
+  );
 }
 
 Buffer.prototype.toInt = function(this: Buffer): BN {
