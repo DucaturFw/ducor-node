@@ -28,7 +28,7 @@
     "@types/bn.js": "^4.11.1",
     "@types/brorand": "^1.0.30",
     "@types/ethereumjs-abi": "^0.6.1",
-    "@types/node": "^10.7.1",
+    "@types/node": "^10.9.2",
     "bcrypto": "^1.1.0",
     "bitcoin-ts": "^1.2.0",
     "bn.js": "^4.11.8",
