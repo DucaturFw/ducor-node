@@ -2,7 +2,21 @@ import BN = require("bn.js");
 import { soliditySHA3 } from "ethereumjs-abi";
 import keccak = require("keccak");
 import elliptic = require("elliptic");
-const secp256k1 = elliptic.ec("secp256k1");
+// const secp256k1 = elliptic.ec("secp256k1");
+
+export const ecurve = elliptic.ec(
+  new elliptic.curves.PresetCurve({
+    type: "short",
+    prime: null,
+    p: "30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47",
+    a: "0",
+    b: "3",
+    n: "30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001",
+    hash: require("hash.js").sha256,
+    gRed: false,
+    g: ["1", "2"]
+  })
+) as any;
 
 type Point = typeof elliptic.Point;
 type MUSignature = {
@@ -85,7 +99,7 @@ export function getSignature(
   var s = hashGroupKeyWithPointAndMessage(randomPoint, groupPublicKey, message)
     .mul(hashNonceWithKey(groupNonce, personalPublicKey))
     .mul(personalPrivateKey);
-  var si = randomNumber.add(s).umod(secp256k1.curve.n);
+  var si = randomNumber.add(s).umod(ecurve.curve.n);
   return {
     r: randomPoint,
     s: si
@@ -114,7 +128,7 @@ export function verifySignature(
   groupPublicKey: Point,
   groupRandomPoint: Point
 ): boolean {
-  const lPoint = secp256k1.curve.g.mul(signature.s);
+  const lPoint = ecurve.curve.g.mul(signature.s);
   const rPoint = groupRandomPoint.add(
     groupPublicKey.mul(
       hashGroupKeyWithPointAndMessage(groupRandomPoint, groupPublicKey, message)
