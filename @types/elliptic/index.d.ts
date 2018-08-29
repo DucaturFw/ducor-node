@@ -41,6 +41,18 @@ declare module "elliptic" {
     | "ed25519"
     | "secp256k1";
 
+  interface ICurveConfiguration {
+    type: string;
+    prime: any | null;
+    p: string;
+    a: string;
+    b: string;
+    n: string;
+    hash: any;
+    gRed: boolean;
+    g: string[];
+  }
+
   type CurveType = "short" | "mont" | "edwards";
 
   interface KeyPairOptions {
@@ -205,7 +217,9 @@ declare module "elliptic" {
       edwards: any;
     };
 
-    curves: any;
+    curves: {
+      PresetCurve: new (config: ICurveConfiguration) => EC;
+    };
 
     ec(other: EC): EC;
     ec(shortcur: CurvePreset): EC;
@@ -214,6 +228,7 @@ declare module "elliptic" {
     eddsa: any;
 
     Point: Point;
+    EC: EC;
   }
 
   const elliptic: IEllipticModule;
