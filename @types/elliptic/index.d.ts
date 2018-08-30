@@ -56,8 +56,8 @@ declare module "elliptic" {
   type CurveType = "short" | "mont" | "edwards";
 
   interface KeyPairOptions {
-    priv: Key;
-    pub: Key;
+    priv?: BN;
+    pub?: Point;
   }
 
   class ECSignature {
@@ -105,9 +105,13 @@ declare module "elliptic" {
     inspect(): string;
   }
 
+  type PointCoordinate = BN; // & { red: boolean; fromRed: () => BN };
+
   class Point {
-    x: BN;
-    y: BN;
+    x: PointCoordinate;
+    y: PointCoordinate;
+
+    red: boolean;
 
     encodeCompressed(enc?: Encs): number[];
     encodeCompressed(enc: ToHex): string;
