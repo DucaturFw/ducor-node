@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node src/app/app.ts",
     "cli": "ts-node src/client/cli.ts",
-    "test": "jest"
+    "test": "jest",
+    "compile": "tsc"
   },
   "repository": {
     "type": "git",

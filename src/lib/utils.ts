@@ -21,7 +21,3 @@ export function hashOfBuffers(...buffers: Buffer[]): Buffer {
     "hex"
   );
 }
-
-Buffer.prototype.toInt = function(this: Buffer): BN {
-  return new BN(this);
-};
