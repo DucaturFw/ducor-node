@@ -1,5 +1,5 @@
 import * as lotion from "lotion";
-import musig from "../lib/musig";
+import * as musig from "../lib/musig";
 
 export interface IState {
   count: number;
