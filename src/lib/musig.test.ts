@@ -36,14 +36,25 @@ describe("Musig", () => {
 
     const s = musig.combineSignatures(si, groupRandomPoint);
 
-    console.log("G.x: ", groupPublicKey.x.toString(10));
-    console.log("G.y: ", groupPublicKey.y.toString(10));
-    console.log("m: ", message.toString("hex"));
-    console.log("s.s: ", s.s.umod(musig.ecurve.curve.n).toString(10));
-    console.log("X.x: ", groupPublicKey.x.toString(10));
-    console.log("X.y: ", groupPublicKey.y.toString(10));
-    console.log("R.x: ", groupRandomPoint.x.toString(10));
-    console.log("R.y: ", groupRandomPoint.y.toString(10));
+    console.log(
+      "GENERATOR.x: ",
+      musig.ecurve.curve.g.x.umod(musig.ecurve.curve.n).toString(10)
+    );
+    console.log(
+      "GENERATOR.y: ",
+      musig.ecurve.curve.g.y.umod(musig.ecurve.curve.n).toString(10)
+    );
+
+    console.log("G.x: ", musig.ecurve.curve.g.inspect());
+    console.log("G.y: ", musig.ecurve.curve.g.inspect());
+
+    console.log("private: ", keys[0].getPrivate().toString(10));
+    console.log("public: ", keys[0].getPublic().inspect());
+
+    // console.log("G.x: ", groupPublicKey.x.toString(10));
+    // console.log("G.y: ", groupPublicKey.y.toString(10));
+    // console.log("m: ", message.toString("hex"));
+    console.log("s.s: ", s.s.toString(10));
 
     const sG = musig.ecurve.curve.g.mul(s.s);
     const h = musig.hashGroupKeyWithPointAndMessage(
@@ -55,14 +66,30 @@ describe("Musig", () => {
     const rr = groupPublicKey.mul(h);
     const rl = groupRandomPoint.add(rr);
 
-    console.log("sg.x: ", sG.x.umod(musig.ecurve.curve.n).toString(10));
-    console.log("sg.y: ", sG.y.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("sg.x: ", sG.x.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("sg.y: ", sG.y.umod(musig.ecurve.curve.n).toString(10));
 
-    console.log("h: ", h.umod(musig.ecurve.curve.n).toString(10));
-    console.log("rr.x: ", rr.x.umod(musig.ecurve.curve.n).toString(10));
-    console.log("rr.y: ", rr.y.umod(musig.ecurve.curve.n).toString(10));
-    console.log("rl: ", rl.x.umod(musig.ecurve.curve.n).toString(10));
-    console.log("rl: ", rl.y.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("h: ", h.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rr.x: ", rr.x.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rr.y: ", rr.y.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rl: ", rl.x.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rl: ", rl.y.umod(musig.ecurve.curve.n).toString(10));
+
+    const lPoint = musig.ecurve.curve.g.mul(s.s);
+    const rh = musig.hashGroupKeyWithPointAndMessage(
+      groupRandomPoint,
+      groupPublicKey,
+      message
+    );
+    const r1 = groupPublicKey.mul(rh);
+    const rPoint = groupRandomPoint.add(r1);
+
+    console.log("L: ", lPoint.inspect());
+    console.log("R: ", rPoint.inspect());
+    console.log("h1: ", rh.toString(10));
+    console.log("R: ", groupRandomPoint.inspect());
+    console.log("X: ", groupPublicKey.inspect());
+    console.log("r1: ", r1.inspect());
 
     expect(
       musig.verifySignature(message, s, groupPublicKey, groupRandomPoint)

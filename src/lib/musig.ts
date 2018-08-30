@@ -44,10 +44,17 @@ export function hashGroupKeyWithPointAndMessage(
   groupKey: Point,
   message: Buffer
 ): BN {
+  const p = (a: any): string => a.fromRed().toString(10);
   return new BN(
     soliditySHA3(
       ["uint256", "uint256", "uint256", "uint256", "bytes32"],
-      [groupKey.x, groupKey.y, randomPoint.x, randomPoint.y, message]
+      [
+        p(randomPoint.x),
+        p(randomPoint.y),
+        p(groupKey.x),
+        p(groupKey.y),
+        message
+      ]
     )
   );
 }
