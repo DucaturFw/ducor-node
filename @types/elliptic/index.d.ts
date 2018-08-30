@@ -41,11 +41,23 @@ declare module "elliptic" {
     | "ed25519"
     | "secp256k1";
 
+  interface ICurveConfiguration {
+    type: string;
+    prime: any | null;
+    p: string;
+    a: string;
+    b: string;
+    n: string;
+    hash: any;
+    gRed: boolean;
+    g: string[];
+  }
+
   type CurveType = "short" | "mont" | "edwards";
 
   interface KeyPairOptions {
-    priv: Key;
-    pub: Key;
+    priv?: BN;
+    pub?: Point;
   }
 
   class ECSignature {
@@ -93,9 +105,13 @@ declare module "elliptic" {
     inspect(): string;
   }
 
+  type PointCoordinate = BN; // & { red: boolean; fromRed: () => BN };
+
   class Point {
-    x: BN;
-    y: BN;
+    x: PointCoordinate;
+    y: PointCoordinate;
+
+    red: boolean;
 
     encodeCompressed(enc?: Encs): number[];
     encodeCompressed(enc: ToHex): string;
@@ -205,7 +221,9 @@ declare module "elliptic" {
       edwards: any;
     };
 
-    curves: any;
+    curves: {
+      PresetCurve: new (config: ICurveConfiguration) => EC;
+    };
 
     ec(other: EC): EC;
     ec(shortcur: CurvePreset): EC;
@@ -214,6 +232,7 @@ declare module "elliptic" {
     eddsa: any;
 
     Point: Point;
+    EC: EC;
   }
 
   const elliptic: IEllipticModule;

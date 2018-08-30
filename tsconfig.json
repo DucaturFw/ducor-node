@@ -5,7 +5,9 @@
     "lib": ["es2015", "es2016.array.include", "es2017.object"],
     "resolveJsonModule": true,
     "typeRoots": ["./@types", "./node_modules/@types/"],
-    "declaration": true
+    "declaration": true,
+    "rootDirs": ["./src"],
+    "outDir": "./lib"
     //"types": ["./node_modules/types-bn"],
     // "strict": true
     // "allowJs": true,                       /* Allow javascript files to be compiled. */
@@ -47,5 +49,7 @@
     // "inlineSources": true,                 /* Emit the source alongside the sourcemaps within a single file; requires '--inlineSourceMap' or '--sourceMap' to be set. */
     // "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
-  }
+  },
+  "exclude": ["./src/**/*.test.ts"],
+  "include": ["./src/**/*"]
 }

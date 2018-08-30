@@ -1,7 +1,6 @@
 import "jest-extended";
 import elliptic = require("elliptic");
 import * as musig from "../lib/musig";
-const secp256k1 = elliptic.ec("secp256k1");
 
 describe("Musig", () => {
   it("should verify", () => {
@@ -9,13 +8,13 @@ describe("Musig", () => {
       "5163d545d17016acac014f8ffee3f0a11ace3a3b77be09b2bc4e88bbfa6dcf70",
       "5163d545d17016acac014f8ffee3f0a11ace3a3b77be09b2bc4e88bbfa6dcf71",
       "5163d545d17016acac014f8ffee3f0a11ace3a3b77be09b2bc4e88bbfa6dcf72"
-    ].map(raw => secp256k1.keyFromPrivate(raw, "hex"));
+    ].map(raw => musig.ecurve.keyFromPrivate(raw, "hex"));
 
     const rnd = [
       "5163d545d17016acac014f8ffee3f0a11ace3a3b77be09b2bc4e88bbfa6dcf73",
       "5163d545d17016acac014f8ffee3f0a11ace3a3b77be09b2bc4e88bbfa6dcf74",
       "5163d545d17016acac014f8ffee3f0a11ace3a3b77be09b2bc4e88bbfa6dcf75"
-    ].map(raw => secp256k1.keyFromPrivate(raw, "hex"));
+    ].map(raw => musig.ecurve.keyFromPrivate(raw, "hex"));
 
     const pubs = keys.map(k => k.getPublic());
     const nonce = musig.signerGroupNonce(pubs);
@@ -37,14 +36,27 @@ describe("Musig", () => {
 
     const s = musig.combineSignatures(si, groupRandomPoint);
 
-    console.log("m: ", message.toString("hex"));
-    console.log("s.s: ", s.s.umod(secp256k1.curve.n).toString(10));
-    console.log("X.x: ", groupPublicKey.x.toString(10));
-    console.log("X.y: ", groupPublicKey.y.toString(10));
-    console.log("R.x: ", groupRandomPoint.x.toString(10));
-    console.log("R.y: ", groupRandomPoint.y.toString(10));
+    console.log(
+      "GENERATOR.x: ",
+      musig.ecurve.curve.g.x.umod(musig.ecurve.curve.n).toString(10)
+    );
+    console.log(
+      "GENERATOR.y: ",
+      musig.ecurve.curve.g.y.umod(musig.ecurve.curve.n).toString(10)
+    );
 
-    const sG = secp256k1.curve.g.mul(s.s);
+    console.log("G.x: ", musig.ecurve.curve.g.inspect());
+    console.log("G.y: ", musig.ecurve.curve.g.inspect());
+
+    console.log("private: ", keys[0].getPrivate().toString(10));
+    console.log("public: ", keys[0].getPublic().inspect());
+
+    // console.log("G.x: ", groupPublicKey.x.toString(10));
+    // console.log("G.y: ", groupPublicKey.y.toString(10));
+    // console.log("m: ", message.toString("hex"));
+    console.log("s.s: ", s.s.toString(10));
+
+    const sG = musig.ecurve.curve.g.mul(s.s);
     const h = musig.hashGroupKeyWithPointAndMessage(
       groupRandomPoint,
       groupPublicKey,
@@ -54,23 +66,39 @@ describe("Musig", () => {
     const rr = groupPublicKey.mul(h);
     const rl = groupRandomPoint.add(rr);
 
-    console.log("sg.x: ", sG.x.umod(secp256k1.curve.n).toString(10));
-    console.log("sg.y: ", sG.y.umod(secp256k1.curve.n).toString(10));
+    // console.log("sg.x: ", sG.x.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("sg.y: ", sG.y.umod(musig.ecurve.curve.n).toString(10));
 
-    console.log("h: ", h.umod(secp256k1.curve.n).toString(10));
-    console.log("rr.x: ", rr.x.umod(secp256k1.curve.n).toString(10));
-    console.log("rr.y: ", rr.y.umod(secp256k1.curve.n).toString(10));
-    console.log("rl: ", rl.x.umod(secp256k1.curve.n).toString(10));
-    console.log("rl: ", rl.y.umod(secp256k1.curve.n).toString(10));
+    // console.log("h: ", h.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rr.x: ", rr.x.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rr.y: ", rr.y.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rl: ", rl.x.umod(musig.ecurve.curve.n).toString(10));
+    // console.log("rl: ", rl.y.umod(musig.ecurve.curve.n).toString(10));
+
+    const lPoint = musig.ecurve.curve.g.mul(s.s);
+    const rh = musig.hashGroupKeyWithPointAndMessage(
+      groupRandomPoint,
+      groupPublicKey,
+      message
+    );
+    const r1 = groupPublicKey.mul(rh);
+    const rPoint = groupRandomPoint.add(r1);
+
+    console.log("L: ", lPoint.inspect());
+    console.log("R: ", rPoint.inspect());
+    console.log("h1: ", rh.toString(10));
+    console.log("R: ", groupRandomPoint.inspect());
+    console.log("X: ", groupPublicKey.inspect());
+    console.log("r1: ", r1.inspect());
 
     expect(
       musig.verifySignature(message, s, groupPublicKey, groupRandomPoint)
     ).toBeTrue();
   });
 });
-// const secp256k1 = new elliptic.ec("secp256k1");
+// const musig.ecurve = new elliptic.ec("musig.ecurve");
 // const { hash256 } = require("bcrypto");
-// const curve = secp256k1.curve;
+// const curve = musig.ecurve.curve;
 // const Ed25519 = elliptic.eddsa("ed25519");
 
 // describe("musig cryptography tests", () => {
@@ -78,7 +106,7 @@ describe("Musig", () => {
 //     "5163d545d17016acac014f8ffee3f0a11ace3a3b77be09b2bc4e88bbfa6dcf7b",
 //     "9a0c75b5c2ca6315534eff1e6fb3d4247a8a6b292734bcfbcc0de0be72654d8b",
 //     "966afab6a540e1adfaf82e960eb84cd99ebab2d7e9f518eaa071ac264529968d"
-//   ].map(raw => secp256k1.keyFromPrivate(raw, "hex"));
+//   ].map(raw => musig.ecurve.keyFromPrivate(raw, "hex"));
 
 //   const pubs = keys.map(key => key.getPublic());
 
